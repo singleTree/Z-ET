@@ -9,8 +9,10 @@ namespace ET
     /// <summary>
     /// ConfigLoader会扫描所有的有ConfigAttribute标签的配置,加载进来
     /// </summary>
-    public class ConfigLoader : Singleton<ConfigLoader>, ISingletonAwake
+    public class ConfigLoader: Singleton<ConfigLoader>, ISingletonAwake
     {
+        private readonly Dictionary<Type, IResolveRef> allConfig = new();
+
         public struct GetAllConfigBytes
         {
         }
@@ -29,11 +31,14 @@ namespace ET
             GetOneConfigBytes getOneConfigBytes = new() { ConfigName = configType.Name };
             byte[] oneConfigBytes = await EventSystem.Instance.Invoke<GetOneConfigBytes, ETTask<byte[]>>(getOneConfigBytes);
             LoadOneConfig(configType, oneConfigBytes);
+            ResolveRef();
         }
 
         public async ETTask LoadAsync()
         {
-            Dictionary<Type, byte[]> configBytes = await EventSystem.Instance.Invoke<GetAllConfigBytes, ETTask<Dictionary<Type, byte[]>>>(new GetAllConfigBytes());
+            this.allConfig.Clear();
+            Dictionary<Type, byte[]> configBytes =
+                    await EventSystem.Instance.Invoke<GetAllConfigBytes, ETTask<Dictionary<Type, byte[]>>>(new GetAllConfigBytes());
 
 #if DOTNET || UNITY_STANDALONE
             using ListComponent<Task> listTasks = ListComponent<Task>.Create();
@@ -52,13 +57,24 @@ namespace ET
                 LoadOneConfig(type, configBytes[type]);
             }
 #endif
+            ResolveRef();
         }
 
-        private static void LoadOneConfig(Type configType, byte[] oneConfigBytes)
+        private void LoadOneConfig(Type configType, byte[] oneConfigBytes)
         {
-            object category = MongoHelper.Deserialize(configType, oneConfigBytes, 0, oneConfigBytes.Length);
+            // object category = MongoHelper.Deserialize(configType, oneConfigBytes, 0, oneConfigBytes.Length);
+            object category = Activator.CreateInstance(configType, oneConfigBytes);
             ASingleton singleton = category as ASingleton;
+            this.allConfig[configType] = category as IResolveRef;
             World.Instance.AddSingleton(singleton);
+        }
+
+        private void ResolveRef()
+        {
+            foreach (var targetConfig in this.allConfig.Values)
+            {
+                targetConfig.ResolveRef();
+            }
         }
     }
 }

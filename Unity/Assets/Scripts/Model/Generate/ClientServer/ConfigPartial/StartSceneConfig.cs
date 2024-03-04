@@ -21,7 +21,7 @@ namespace ET
         public List<StartSceneConfig> Maps = new();
 
         public StartSceneConfig Match;
-        
+
         public StartSceneConfig Benchmark;
         
         public List<StartSceneConfig> GetByProcess(int process)
@@ -33,10 +33,10 @@ namespace ET
         {
             return this.ClientScenesByName[zone][name];
         }
-
-        public override void EndInit()
+        public StartSceneConfig Get(int id) => this.Get(Options.Instance.StartConfig, id);
+        partial void PostInit()
         {
-            foreach (StartSceneConfig startSceneConfig in this.GetAll().Values)
+            foreach (StartSceneConfig startSceneConfig in this.DataList)
             {
                 this.ProcessScenes.Add(startSceneConfig.Process, startSceneConfig);
                 
@@ -84,7 +84,7 @@ namespace ET
         {
             get
             {
-                return StartProcessConfigCategory.Instance.Get(this.Process);
+                return StartProcessConfigCategory.Instance.Get(Options.Instance.StartConfig, this.Process);
             }
         }
         
@@ -92,7 +92,7 @@ namespace ET
         {
             get
             {
-                return StartZoneConfigCategory.Instance.Get(this.Zone);
+                return StartZoneConfigCategory.Instance.Get(Options.Instance.StartConfig, this.Zone);
             }
         }
 
@@ -103,7 +103,7 @@ namespace ET
         {
             get
             {
-                if (innerIPPort == null)
+                if (this.innerIPPort == null)
                 {
                     this.innerIPPort = NetworkHelper.ToIPEndPoint($"{this.StartProcessConfig.InnerIP}:{this.Port}");
                 }
@@ -128,7 +128,7 @@ namespace ET
             }
         }
 
-        public override void EndInit()
+        partial void PostInit()
         {
             this.ActorId = new ActorId(this.Process, this.Id, 1);
             this.Type = EnumHelper.FromString<SceneType>(this.SceneType);
