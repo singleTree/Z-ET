@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Luban;
 #if DOTNET || UNITY_STANDALONE
 using System.Threading.Tasks;
 #endif
@@ -63,7 +64,7 @@ namespace ET
         private void LoadOneConfig(Type configType, byte[] oneConfigBytes)
         {
             // object category = MongoHelper.Deserialize(configType, oneConfigBytes, 0, oneConfigBytes.Length);
-            object category = Activator.CreateInstance(configType, oneConfigBytes);
+            object category = Activator.CreateInstance(configType, new ByteBuf(oneConfigBytes));
             ASingleton singleton = category as ASingleton;
             this.allConfig[configType] = category as IResolveRef;
             World.Instance.AddSingleton(singleton);
