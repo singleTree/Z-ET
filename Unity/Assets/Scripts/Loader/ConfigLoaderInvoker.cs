@@ -44,7 +44,7 @@ namespace ET
                     string configFilePath;
                     if (startConfigs.Contains(configType.Name))
                     {
-                        configFilePath = $"../Config/Excel/{ct}/{Options.Instance.StartConfig}/{configType.Name}.bytes";    
+                        configFilePath = $"../Config/Excel/{ct}/{configType.Name}.bytes";    
                     }
                     else
                     {
@@ -101,7 +101,7 @@ namespace ET
             string configFilePath;
             if (startConfigs.Contains(configName))
             {
-                configFilePath = $"../Config/Excel/{ct}/{Options.Instance.StartConfig}/{configName}.bytes";    
+                configFilePath = $"../Config/Excel/{ct}/{configName}.bytes";    
             }
             else
             {
